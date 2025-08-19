@@ -40,6 +40,7 @@ import SyncMonitor from './admin/SyncMonitor';
 import AdminLayout from './admin/AdminLayout';
 import ArchivedPatientsTable from './admin/ArchivedPatientsTable';
 import ReviewModeration from './admin/ReviewModeration';
+import AdminHospitalManager from './admin/AdminHospitalManager';
 
 import 'leaflet/dist/leaflet.css';
 import './index.css';
@@ -194,6 +195,7 @@ function App() {
           <Route path="sync" element={<SyncMonitor />} />
           <Route path="archived" element={<ArchivedPatientsTable />} />
           <Route path="reviews" element={<ReviewModeration />} />
+          <Route path="hospitals" element={<AdminHospitalManager />} />
         </Route>
       </Routes>
     </Router>

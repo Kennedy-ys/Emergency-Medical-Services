@@ -64,6 +64,37 @@ export default defineConfig({
               },
             },
           },
+
+          // ✅ Images (patient photos, ambulance icons, etc.)
+          {
+            urlPattern: ({ request }) => request.destination === 'image',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          // ✅ Google Fonts (if you’re using them)
+          {
+            urlPattern: ({ url }) =>
+              url.origin.includes('fonts.googleapis.com') ||
+              url.origin.includes('fonts.gstatic.com'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          
         ],
         importScripts: [
           'precache-map-tiles.js', // Custom script to precache specific map tiles

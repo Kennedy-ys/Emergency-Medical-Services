@@ -60,6 +60,7 @@ export default function AdminLayout() {
           <Link to="/admin/sync" className="hover:underline">Sync Monitor</Link>
           <Link to="/admin/archived" className="hover:underline">Archived Patients</Link>
           <Link to="/admin/reviews" className="hover:underline">Review Moderation</Link>
+          <Link to="/admin/hospitals" className="hover:underline">Hospital Management</Link>
         </nav>
         <div className="mt-auto text-sm">
           <p className="mb-2">Logged in as: {email}</p>
@@ -71,7 +72,6 @@ export default function AdminLayout() {
 
       {/* Main content */}
       <main className="flex-1 p-6 bg-gray-100 overflow-y-auto">
-        {/* <AdminAutoDispatch /> */}
         <Outlet />
       </main>
     </div>
