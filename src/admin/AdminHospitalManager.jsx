@@ -6,11 +6,12 @@ import { useAdminStatus } from "../hooks/useAdminStatus";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import hospitalimg from "../assets/icons/hospital-icon.png"
 import { useNavigate } from "react-router-dom";
 
 // Default hospital icon
 const hospitalIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+  iconUrl: hospitalimg,
   iconSize: [30, 30],
 });
 
@@ -48,10 +49,12 @@ export default function AdminHospitalManager() {
   useEffect(() => {
     const hospitalsRef = ref(db, "hospitals");
     return onValue(hospitalsRef, (snap) => {
-      const data = snap.val() || {};
+      const data = snap.val();
       const list = Object.entries(data).map(([id, value]) => ({
         id,
         ...value,
+        lat: parseFloat(value.lat),
+        lng: parseFloat(value.lng),
       }));
       setHospitals(list);
     });

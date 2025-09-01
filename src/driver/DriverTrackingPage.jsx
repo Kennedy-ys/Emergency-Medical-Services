@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom";
 import ambulanceImg from "../assets/icons/ambulance-icon.png";
 import hospitalImg from "../assets/icons/hospital-icon.png";
 import patientImg from "../assets/icons/patient-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
 
 const ambulanceIcon = L.icon({
   iconUrl: ambulanceImg,
@@ -23,7 +25,7 @@ const ambulanceIcon = L.icon({
 
 const hospitalIcon = L.icon({
   iconUrl: hospitalImg,
-  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+  shadowUrl: markerShadow,
   iconSize: [30, 40],
   iconAnchor: [15, 40],
   popupAnchor: [0, -35],

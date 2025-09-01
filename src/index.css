@@ -8,6 +8,10 @@
     border-radius: 0.5rem;
 }
 
+.leaflet-container a{
+  color: white;
+}
+
 /* Tailwind custom utility (e.g. in globals.css or tailwind.config.css) */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

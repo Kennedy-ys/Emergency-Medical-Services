@@ -1,194 +1,240 @@
-// src/pages/LocateHospitals.jsx
-import React, { useEffect, useState } from "react";
-import { MapPin, ArrowRight, User } from "react-feather";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useEffect, useState, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { ref, onValue } from "firebase/database";
 import { db } from "../firebaseConfig";
 import L from "leaflet";
+import { GiPathDistance } from "react-icons/gi"
+import { RxLapTimer } from "react-icons/rx";
+import { RiPhoneFill } from "react-icons/ri";
 import "leaflet/dist/leaflet.css";
+import "leaflet-routing-machine";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 
-// Fix Leaflet marker icon issues in React/Vite
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import patientImg from "../assets/icons/patient-icon.png";
+import hospitalImg from "../assets/icons/hospital-icon.png";
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
+const patientIcon = L.icon({
+  iconUrl: patientImg,
   shadowUrl: markerShadow,
+  iconSize: [30, 40],
+  iconAnchor: [15, 40],
+  popupAnchor: [0, -35],
 });
 
-// Custom blue icon for user
-const userIcon = new L.Icon({
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  shadowSize: [41, 41],
-  className: "user-marker",
+const hospitalIcon = L.icon({
+  iconUrl: hospitalImg,
+  shadowUrl: markerShadow,
+  iconSize: [30, 40],
+  iconAnchor: [15, 40],
+  popupAnchor: [0, -35],
 });
-
-// Haversine formula to calc distance between coords (in km)
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return (R * c).toFixed(1);
-}
 
 const LocateHospitals = () => {
   const [hospitals, setHospitals] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [routeInfo, setRouteInfo] = useState(null);
+  const mapRef = useRef();
+  const routingControlRef = useRef(null);
 
-  // Load hospitals from Firebase
+  // Get hospitals & user location
   useEffect(() => {
     const hospitalsRef = ref(db, "hospitals");
-    const unsubscribe = onValue(hospitalsRef, (snapshot) => {
+    return onValue(hospitalsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const list = Object.keys(data).map((key) => ({
-          id: key,
-          ...data[key],
-        }));
+        const list = Object.entries(data)
+          .filter(([_, h]) => !h.archived)
+          .map(([id, h]) => ({
+            id,
+            ...h,
+            location: {
+              latitude: parseFloat(h.lat),
+              longitude: parseFloat(h.lng),
+            },
+          }));
         setHospitals(list);
       }
     });
-    return () => unsubscribe();
+    
   }, []);
 
-  //Search hospitals by name
-  const filteredHospitals = hospitals.filter((hospital) =>
-    hospital.name.toLowerCase().includes(searchTerm.toLowerCase()) || (hospital.type && hospital.type.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  // Get user location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserLocation({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
           });
         },
         (err) => {
-          console.error("Geolocation error:", err);
+          console.warn("Geolocation error:", err.message);
         }
       );
     }
   }, []);
 
-  // Add distances if we have user location
-  const hospitalsWithDistance = hospitals
-    .map((h) => {
-      if (userLocation && h.lat && h.lng) {
-        return {
-          ...h,
-          distance: calculateDistance(
-            userLocation.lat,
-            userLocation.lng,
-            h.lat,
-            h.lng
-          ),
-        };
-      }
-      return h;
+  const routeToHospital = (hospital) => {
+    if (!userLocation) return;
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (routingControlRef.current) {
+      map.removeControl(routingControlRef.current);
+      routingControlRef.current = null;
+      setRouteInfo(null);
+    }
+
+    const userLatLng = L.latLng(userLocation.latitude, userLocation.longitude);
+    const hospitalLatLng = L.latLng(
+      hospital.location.latitude,
+      hospital.location.longitude
+    );
+
+    const control = L.Routing.control({
+      waypoints: [userLatLng, hospitalLatLng],
+      routeWhileDragging: false,
+      addWaypoints: false,
+      draggableWaypoints: false,
+      createMarker: () => null,
+      show: false,
     })
-    .sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
+      .on("routesfound", function (e) {
+        const route = e.routes[0];
+        const { totalDistance, totalTime } = route.summary;
+        setRouteInfo({
+          distance: (totalDistance / 1000).toFixed(2) + " km",
+          duration: Math.ceil(totalTime / 60) + " min",
+        });
+      })
+      .addTo(map);
+
+    routingControlRef.current = control;
+  };
+
+  const clearRoute = () => {
+    const map = mapRef.current;
+    if (routingControlRef.current && map) {
+      map.removeControl(routingControlRef.current);
+      routingControlRef.current = null;
+      setRouteInfo(null);
+    }
+  };
+
+  //
+  const allPositions = [
+    ...hospitals.map((h) => [h.location.latitude, h.location.longitude]),
+    ...(userLocation ? [[userLocation.latitude, userLocation.longitude]] : []),
+  ];
 
   return (
-    <div className="px-4 py-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-4 text-center">
-        Locate Nearby Hospitals
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">
+        🗺️ hospital Locations
       </h2>
 
-       {/* Search Bar */}
-        <input
-          type="text"
-          placeholder="Search hospitals..."
-          className="w-full p-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="relative rounded shadow overflow-hidden">
+        {/* Distance/Duration Box */}
+        {routeInfo && (
+          <div className="absolute top-2 left-13 bg-white border shadow-md p-2 rounded z-[1000] text-sm">
+            <p>
+              <GiPathDistance /><strong>Distance:</strong> {routeInfo.distance}
+            </p>
+            <p>
+              <RxLapTimer /><strong>Duration:</strong> {routeInfo.duration}
+            </p>
+          </div>
+        )}
 
-      {/* Big Map with User + Hospitals */}
-      <div className="h-80 w-full rounded-lg overflow-hidden mb-6">
         <MapContainer
-          center={
-            userLocation
-              ? [userLocation.lat, userLocation.lng]
-              : [6.5244, 3.3792] // fallback: Lagos
-          }
-          zoom={13}
-          style={{ height: "100%", width: "100%" }}
+          ref={mapRef}
+          center={[9.082, 8.6753]} // Nigeria fallback
+          zoom={6}
+          scrollWheelZoom={true}
+          style={{ height: "75vh", width: "100%" }}
+          className="rounded"
+          whenCreated={(mapInstance) => (mapRef.current = mapInstance)}
         >
           <TileLayer
-            attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
           />
+
+          {/* hospital Markers */}
+          {hospitals.map((h) => (
+            <Marker
+              key={h.id}
+              position={[h.location.latitude, h.location.longitude]}
+              icon={hospitalIcon}
+              eventHandlers={{
+                click: () => routeToHospital(h),
+              }}
+            >
+              <Popup>
+                <strong className="pb-4.5">{h.name}</strong>
+                <br />
+                {h.address}
+                <br />
+                <span></span>
+                <RiPhoneFill /> {h.phone || "N/A"}
+                <br />
+                {userLocation && (
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&origin=${userLocation.latitude},${userLocation.longitude}&destination=${h.location.latitude},${h.location.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-2 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-xs font-medium"
+                  >
+                   <RxLapTimer /> Navigate with Google Maps
+                  </a>
+                )}
+              </Popup>
+            </Marker>
+          ))}
+
+          {/* User Marker */}
           {userLocation && (
-            <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
-              <Popup>You are here</Popup>
+            <Marker
+              position={[userLocation.latitude, userLocation.longitude]}
+              icon={patientIcon}
+            >
+              <Popup>
+                🧍 You are here
+              </Popup>
             </Marker>
           )}
-          {hospitalsWithDistance.map(
-            (h) =>
-              h.lat &&
-              h.lng && (
-                <Marker key={h.id} position={[h.lat, h.lng]}>
-                  <Popup>{h.name}</Popup>
-                </Marker>
-              )
-          )}
+
+          <FitBounds positions={allPositions} />
         </MapContainer>
       </div>
 
-      {/* Hospital List */}
-      <div className="flex flex-col gap-6">
-        {hospitalsWithDistance.map((hospital) => (
-          <div
-            key={hospital.id}
-            className="bg-white rounded-xl shadow-md p-4 border border-gray-100"
-          >
-            <div className="mb-3">
-              <h3 className="text-lg font-semibold">{hospital.name}</h3>
-              <p className="text-sm text-gray-600">{hospital.address}</p>
-              {hospital.distance && (
-                <div className="flex items-center text-gray-500 text-sm mt-1">
-                  <MapPin size={16} className="mr-1" />
-                  {hospital.distance} km away
-                </div>
-              )}
-            </div>
-
-            <button
-              className="flex items-center gap-2 text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm transition"
-              onClick={() =>
-                window.open(
-                  `https://www.google.com/maps/dir/?api=1&destination=${hospital.lat},${hospital.lng}`,
-                  "_blank"
-                )
-              }
-            >
-              Get Directions <ArrowRight size={16} />
-            </button>
-          </div>
-        ))}
+      {/* Clear Route Button */}
+      <div className="mt-4">
+        <button
+          onClick={clearRoute}
+          disabled={!routingControlRef.current}
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50"
+        >
+          ❌ Clear Route
+        </button>
       </div>
     </div>
   );
 };
+
+// Fit bounds to markers
+function FitBounds({ positions }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (positions.length > 0) {
+      const bounds = L.latLngBounds(positions);
+      map.fitBounds(bounds, { padding: [5, 5] });
+    }
+  }, [positions, map]);
+
+  return null;
+}
 
 export default LocateHospitals;
