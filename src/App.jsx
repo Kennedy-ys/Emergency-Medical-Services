@@ -6,10 +6,6 @@ import { Toaster } from 'react-hot-toast';
 // Public pages
 import AdminLogin from './pages/AdminLogin';
 import Home from './pages/Home';
-import Protocols from './pages/Protocols';
-import PatientForm from './pages/PatientForm';
-import Patients from './pages/Patients';
-import OfflineMap from './components/offlineMap';
 import AmbulanceBooking from './pages/AmbulanceBooking';
 import LiveTrackingPage from './pages/LiveTrackingPage';
 import TechnicianChat from './pages/TechnicianChat';
@@ -24,13 +20,6 @@ import DriverProfile from './driver/DriverProfile';
 import DriverRegistration from "./driver/DriverRegistration";
 import DriverLogin from "./driver/DriverLogin";
 import DriverProtectedRoute from "./components/DriverProtectedRoute";
-import MockAmbulanceUpdater from './pages/MockAmbulanceUpdater';
-
-// Ambulance components
-import AmbulanceLayout from './ambulance/AmbulanceLayout';
-import AmbulanceBookingSelection from './ambulance/BookingSelection';
-import ALiveTrackingPage from './ambulance/LiveTrackingPage';
-import Profilepage from './ambulance/Profilepage';
 
 // Admin components
 import AdminDashboard from './admin/AdminDashboard';
@@ -99,19 +88,12 @@ function App() {
   return (
     <Router>
       {!isOnline && (
-        <div className="bg-yellow-500 text-white text-center py-2">
-          📴 You are currently offline. Submissions will be queued.
-        </div>
+        // <div className="bg-yellow-500 text-white text-center py-2">
+        //   📴 You are currently offline. Submissions will be queued.
+        // </div>
+        <div></div>
       )}
       <nav>
-      {/* <nav className="p-4 bg-blue-800 text-white flex gap-4 justify-between"> 
-        <div className="flex gap-4">
-          <Link to="/">Home</Link>
-          <Link to="/protocols">Protocols</Link>
-          <Link to="/form">Patient Form</Link>
-          <Link to="/patients">Patients</Link>
-          <Link to="/map">Map</Link>
-        </div> */}
         <div>
           {queuedCount > 0 && (
             <span className="bg-red-500 px-2 py-1 rounded text-sm">
@@ -126,24 +108,14 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/protocols" element={<Protocols />} />
-        <Route path="/form" element={<PatientForm />} />
-        <Route path="/patients" element={<Patients />} />
-        <Route path="/map" element={<OfflineMap />} />
         <Route path="/ambulance-booking" element={<AmbulanceBooking />} />
         <Route path="/technician-chat" element={<TechnicianChat />} />
         <Route path="/first-aid-tips" element={<FirstAidTips />} />
         <Route path="/locate-hospitals" element={<LocateHospitals />} />
-        {/* <Route path="/tracking/:id" element={<BookingTracker />} /> */}
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/driver/register" element={<DriverRegistration />} />
         <Route path="/driver/login" element={<DriverLogin />} />
-        <Route path="/ambulance/dashboard" element={<AmbulanceLayout />} />
         <Route path="/track/:bookingId" element={<LiveTrackingPage />} />
-        <Route path="/mock-ambulance" element={<MockAmbulanceUpdater />} />
-        <Route path="/ambulance/bookings" element={<AmbulanceBookingSelection />} />
-        <Route path="/ambulance/track/:bookingId" element={<ALiveTrackingPage />} />
-        <Route path="/profile/:ambulanceId" element={<Profilepage />} />
 
         {/* Driver Protected Routes */}
         <Route

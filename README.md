@@ -1,12 +1,49 @@
-# React + Vite
+# EMS Connect
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An installable web app (PWA) for requesting an ambulance in Calabar, Nigeria: patients request and track an ambulance, drivers receive and run trips, and dispatchers oversee everything from an admin console.
 
-Currently, two official plugins are available:
+## Status
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The app is being rebuilt for a real pilot and moved from Firebase to Supabase. Work happens on the `supabase-migration` branch and follows the implementation plan below. Until Phase 1 lands, the code still talks to Firebase Realtime Database.
 
-## Expanding the ESLint configuration
+## Documentation
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Document | Contents |
+|---|---|
+| [Product Requirements](docs/01-PRD.md) | Users, requirements, scope |
+| [App Flow](docs/02-APP-FLOW.md) | Routes, access, request lifecycle, user flows |
+| [Tech Stack](docs/03-TECH-STACK.md) | Libraries, backend, what changes and why |
+| [Front-end Guidelines](docs/04-FRONTEND-GUIDELINES.md) | Structure, design tokens, coding rules |
+| [Backend Schema](docs/05-BACKEND-SCHEMA.md) | Tables, access rules, server functions |
+| [Implementation Plan](docs/06-IMPLEMENTATION-PLAN.md) | Phases, checklists, decisions, risks |
+
+## Running locally
+
+Requires Node.js 20 or later.
+
+```bash
+npm install
+npm run dev
+```
+
+| Command | Does |
+|---|---|
+| `npm run dev` | Start the dev server |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Serve the production build |
+| `npm run lint` | Run ESLint |
+
+## Main routes (current)
+
+| Route | Screen |
+|---|---|
+| `/` | Landing page |
+| `/ambulance-booking` | Request an ambulance |
+| `/track/:bookingId` | Patient tracking |
+| `/locate-hospitals`, `/first-aid-tips`, `/technician-chat` | Hospitals, first aid, chat (mock) |
+| `/driver/register`, `/driver/login`, `/driver/*` | Driver app |
+| `/admin-login`, `/admin/*` | Admin console |
+
+## Secrets
+
+Never commit keys or service account files. Browser configuration will move to `.env.local` in Phase 1 (see Tech Stack, section 9).

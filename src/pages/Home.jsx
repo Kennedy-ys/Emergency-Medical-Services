@@ -24,10 +24,8 @@ export default function HomePage() {
   const [reviewStars, setReviewStars] = useState(5);
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
 
   const servicesScrollRef = useRef(null);
-  const toggleMenu = () => setIsOpen(!isOpen);
 
   useEffect(() => {
     AOS.init({ duration: 800 });
