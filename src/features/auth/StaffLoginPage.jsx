@@ -35,6 +35,11 @@ export default function StaffLoginPage() {
     return <Navigate to={landingFor(role, location.state?.from)} replace />;
   }
 
+  // Someone part-way through a driver application goes back to it after signing in.
+  if (signedIn && role === 'patient' && location.state?.from === '/driver/register') {
+    return <Navigate to="/driver/register" replace />;
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8">
       <Card className="w-full max-w-md p-6">
@@ -48,6 +53,12 @@ export default function StaffLoginPage() {
             <p className="text-gray-900" role="alert">
               This account does not have staff access. Ask a dispatcher to set it up, or sign in
               with a different account.
+            </p>
+            <p className="mt-2 text-gray-900">
+              Ambulance driver?{' '}
+              <Link to="/driver/register" className="font-semibold text-brand hover:underline">
+                Apply to drive
+              </Link>
             </p>
             <Button variant="secondary" className="mt-4" onClick={() => signOut()}>
               Sign out
@@ -85,7 +96,15 @@ export default function StaffLoginPage() {
           </form>
         )}
 
-        <p className="mt-6 text-gray-600">
+        {!signedIn && (
+          <p className="mt-6 text-gray-600">
+            New ambulance driver?{' '}
+            <Link to="/driver/register" className="font-semibold text-brand hover:underline">
+              Apply to drive
+            </Link>
+          </p>
+        )}
+        <p className="mt-2 text-gray-600">
           Need an ambulance?{' '}
           <Link to="/" className="font-semibold text-brand hover:underline">
             Go to the home page

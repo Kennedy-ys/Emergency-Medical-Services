@@ -11,6 +11,31 @@ export function useStaffSignIn() {
   return useMutation({ mutationFn: signInStaff });
 }
 
+async function signUpStaff({ email, password }) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo: `${window.location.origin}/driver/register` },
+  });
+  if (error) throw error;
+  // No session means the project wants the email address confirmed first.
+  return { needsConfirmation: !data.session };
+}
+
+/** Creates an email and password account. It has no staff access until an application is approved. */
+export function useStaffSignUp() {
+  return useMutation({ mutationFn: signUpStaff });
+}
+
+export function signUpErrorMessage(error) {
+  if (error?.code === 'user_already_exists' || error?.code === 'email_exists') {
+    return 'An account with this email already exists. Sign in instead.';
+  }
+  if (error?.code === 'weak_password') return 'Choose a longer password.';
+  if (error?.status === 429) return 'Too many attempts. Wait a minute and try again.';
+  return 'Could not create the account. Check your connection and try again.';
+}
+
 /** Turns a sign-in failure into words a person can act on. */
 export function signInErrorMessage(error) {
   if (error?.code === 'invalid_credentials') return 'Email or password is incorrect.';

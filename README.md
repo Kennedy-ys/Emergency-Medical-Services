@@ -42,13 +42,14 @@ npm run dev
 | Route | Screen |
 |---|---|
 | `/` | Landing page |
-| `/ambulance-booking` | Request an ambulance |
+| `/book` | Request an ambulance (works offline: the request is held and sent once) |
 | `/track/:bookingId` | Patient tracking |
 | `/hospitals` | Hospital finder (Supabase) |
 | `/first-aid-tips`, `/technician-chat` | First aid, chat (mock) |
 | `/staff/login` | Sign-in for drivers, technicians and dispatchers (Supabase) |
-| `/admin/dispatch`, `/driver`, `/technician` | Role-guarded staff areas (placeholders until their phase) |
-| `/driver/register`, `/driver/login`, `/driver/dashboard` … | Older driver app (Firebase) |
+| `/driver` | Driver: go on duty, accept requests, run a trip |
+| `/driver/register` | Driver application (approved by a dispatcher) |
+| `/admin/dispatch`, `/technician` | Role-guarded staff areas (placeholders until their phase) |
 | `/admin-login`, `/admin` | Older admin console (Firebase) |
 
 ## Secrets

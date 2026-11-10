@@ -61,14 +61,18 @@ Do this before any new work; it does not depend on the migration.
 
 The product's reason to exist. PRD: P-1 to P-5, D-2, D-3, D-5, D-6.
 
-- [ ] Functions: `request_booking`, `accept_booking`, `decline_booking`, `release_booking`, `advance_booking`, `cancel_booking`, `set_availability`, `nearest_hospitals`; unit tests including the two-drivers race.
-- [ ] `/book`: validated form, hospital picker from the database, pin adjustment, privacy notice.
-- [ ] Offline outbox for requests with `client_request_id`; "Not sent yet" state with Call 112.
-- [ ] `/track/:bookingId`: realtime status, driver card, driver position, route, ETA, cancel.
-- [ ] Driver: availability toggle, throttled location upload, heartbeat, open requests with distance, trip screen with the three status buttons and release.
-- [ ] `mark-stale-drivers` job.
-- [ ] `lib/status.js` as the single source of labels and colours.
-- [ ] Playwright test: request → accept → arrive → hospital → complete, and request → cancel.
+- [x] Functions: `request_booking`, `accept_booking`, `decline_booking`, `release_booking`, `advance_booking`, `cancel_booking`, `set_availability`, `nearest_hospitals`; database tests including the two-drivers race (`npm run test:db`).
+- [x] `/book`: validated form, hospital picker from the database, pin adjustment, privacy notice. Checked in the browser against the live project on 2026-11-10 (request sent, then cancelled).
+- [x] Offline outbox for requests with `client_request_id`; "Not sent yet" state with Call 112. Covered by unit tests (same id on every retry, one shared attempt); not yet tried on a real phone in airplane mode.
+- [x] `/track/:bookingId`: realtime status with polling as a fallback, driver card, driver position, route, ETA, cancel. Checked against the live project.
+- [x] Driver (`/driver`): availability toggle, location upload every 15 seconds that doubles as the heartbeat, open requests with distance, trip screen with the three status buttons and release. Built, unit-tested and run against the live project.
+- [x] Driver application at `/driver/register` and the "being reviewed" state, brought forward from Phase 3 so a driver account can exist. Until `/admin/drivers` is built, approve with the SQL in `supabase/seed.sql`.
+- [x] `mark-stale-drivers` job: `supabase/migrations/20261110000001_stale_driver_job.sql`. Owner: run it once in the Supabase SQL editor.
+- [x] `lib/status.js` as the single source of labels and colours.
+- [x] Old Firebase driver app, booking page and tracking page removed; their addresses redirect to the new screens.
+- [x] Full loop run against the live project by the owner on 2026-11-10: driver application and approval, request, accept, arrive, hospital, complete, with the patient and driver screens staying in step. Run in two browser windows on one machine.
+- [ ] Owner: repeat on two real phones, including a request made in airplane mode.
+- [ ] Playwright test: request → accept → arrive → hospital → complete, and request → cancel. Not started: it needs a test Supabase project with seeded accounts, which does not exist yet.
 
 **Done when:** on two phones, a patient requests, a driver accepts and completes the trip, both screens stay in step throughout, and a request made in airplane mode is delivered exactly once when the connection returns.
 
@@ -76,7 +80,7 @@ The product's reason to exist. PRD: P-1 to P-5, D-2, D-3, D-5, D-6.
 
 PRD: A-1 to A-9, D-1.
 
-- [ ] `register_driver`, driver application screen and "awaiting approval" state.
+- [x] `register_driver`, driver application screen and "awaiting approval" state (done in Phase 2).
 - [ ] `/admin/drivers`: approve, suspend.
 - [ ] `/admin/dispatch`: live map, unassigned queue with timers, `nearest_drivers`, `assign_booking`, cancel.
 - [ ] `/admin/bookings` list and detail with the `booking_events` timeline.

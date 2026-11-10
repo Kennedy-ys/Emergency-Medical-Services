@@ -14,3 +14,9 @@ insert into public.hospitals (name, address, lat, lng) values
 --
 --   update public.profiles set role = 'admin'
 --    where id = (select id from auth.users where email = 'admin@example.com');
+
+-- Approving a driver (until the admin screen exists): the driver applies at
+-- /driver/register, then run this once with their email:
+--
+--   update public.drivers set approval_status = 'approved'
+--    where id = (select id from auth.users where email = 'driver@example.com');
