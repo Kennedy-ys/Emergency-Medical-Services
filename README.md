@@ -4,7 +4,7 @@ An installable web app (PWA) for requesting an ambulance in Calabar, Nigeria: pa
 
 ## Status
 
-The app is being rebuilt for a real pilot and moved from Firebase to Supabase. Work happens on the `supabase-migration` branch and follows the implementation plan below. Phase 1 (the Supabase foundation) is in place: the hospital finder and staff sign-in run on Supabase. Requesting, tracking, the driver screens and the admin console still talk to Firebase until their phase.
+The app is being rebuilt for a real pilot and now runs entirely on Supabase; Firebase has been removed. Work follows the implementation plan below. Phases 1 to 3 are in place: requesting and tracking, the driver screens and the dispatcher console. Patient accounts, push notifications and technician chat come next.
 
 ## Documentation
 
@@ -51,8 +51,9 @@ npm run dev
 | `/driver/register` | Driver application (approved by a dispatcher) |
 | `/admin/dispatch` | Dispatcher: live map, waiting requests, assign and cancel |
 | `/admin/bookings`, `/admin/drivers`, `/admin/hospitals` | Dispatcher: request history, driver approval, hospital list |
+| `/admin/records`, `/admin/reviews`, `/admin/staff` | Dispatcher: crew trip records, review moderation, staff invitations |
+| `/staff/welcome` | Where an invitation email lands: choose a password |
 | `/technician` | Technician area (placeholder until its phase) |
-| `/admin-login`, `/admin` | Older admin console (Firebase) |
 
 ## Secrets
 

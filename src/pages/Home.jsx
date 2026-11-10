@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ref, onValue, push } from "firebase/database";
-import { db } from "../firebaseConfig";
+import { useApprovedReviews, useSubmitReview } from "../features/reviews/api";
+import { useSession } from "../hooks/useSession";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Typewriter from "typewriter-effect";
@@ -16,11 +16,12 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 export default function HomePage() {
-  const [reviews, setReviews] = useState([]);
+  const { data: reviews = [] } = useApprovedReviews();
+  const submitReview = useSubmitReview();
+  const { ensureSession } = useSession();
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [reviewName, setReviewName] = useState("");
-  const [reviewRole, setReviewRole] = useState("");
   const [reviewStars, setReviewStars] = useState(5);
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -29,18 +30,6 @@ export default function HomePage() {
 
   useEffect(() => {
     AOS.init({ duration: 800 });
-
-    const reviewsRef = ref(db, "reviews");
-    const unsubscribe = onValue(reviewsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const list = Object.entries(data).map(([id, value]) => ({
-          id,
-          ...value,
-        }));
-        setReviews(list.filter((r) => r.status === "approved"));
-      }
-    });
 
     const interval = setInterval(() => {
       const el = servicesScrollRef.current;
@@ -55,7 +44,6 @@ export default function HomePage() {
 
     return () => {
       clearInterval(interval);
-      unsubscribe();
       AOS.refresh();
     };
   }, []);
@@ -335,18 +323,17 @@ export default function HomePage() {
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <img
-                      src={review.avatar || avatarImg}
-                      alt={review.name}
+                      src={avatarImg}
+                      alt=""
                       className="w-10 h-10 rounded-full"
                     />
                     <div>
                       <h4 className="font-semibold text-gray-800">
-                        {review.name}
+                        {review.display_name}
                       </h4>
-                      <p className="text-sm text-gray-500">{review.role}</p>
                     </div>
                   </div>
-                  <p className="text-gray-600 mb-3">“{review.message}”</p>
+                  <p className="text-gray-600 mb-3">“{review.comment}”</p>
                   <div className="flex text-yellow-500">
                     {Array.from({ length: review.rating }, (_, i) => (
                       <FaStar key={i} aria-label="star" />
@@ -393,13 +380,6 @@ export default function HomePage() {
               onChange={(e) => setReviewName(e.target.value)}
               className="w-full mb-3 p-2 border border-gray-300 rounded"
             />
-            <input
-              type="text"
-              placeholder="Your Role (Patient, Technician, )  (Optional)"
-              value={reviewRole}
-              onChange={(e) => setReviewRole(e.target.value)}
-              className="w-full mb-3 p-2 border border-gray-300 rounded"
-            />
             <textarea
               placeholder="Your Review"
               value={reviewText}
@@ -422,21 +402,28 @@ export default function HomePage() {
             </div>
             <div className="flex justify-between">
               <button
+                disabled={submitReview.isPending}
                 onClick={async () => {
                   if (!reviewText.trim())
                     return toast.error("Review cannot be empty");
-                  toast.success("Thank you! Your review has been submitted.");
-                  await push(ref(db, "reviews"), {
-                    name: reviewName || "Anonymous",
-                    role: reviewRole || "Patient",
-                    message: reviewText.trim(),
-                    rating: reviewStars,
-                    timestamp: Date.now(),
-                    status: "pending",
-                  });
+                  try {
+                    const author = await ensureSession();
+                    await submitReview.mutateAsync({
+                      authorId: author.id,
+                      displayName: reviewName,
+                      rating: reviewStars,
+                      comment: reviewText,
+                    });
+                  } catch {
+                    return toast.error(
+                      "Could not send your review. Check your connection and try again."
+                    );
+                  }
+                  toast.success(
+                    "Thank you. Your review will appear once it has been checked."
+                  );
                   setShowReviewModal(false);
                   setReviewName("");
-                  setReviewRole("");
                   setReviewText("");
                   setReviewStars(5);
                 }}

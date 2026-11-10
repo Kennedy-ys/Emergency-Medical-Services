@@ -33,22 +33,6 @@ export default defineConfig({
       },
       workbox: {
         runtimeCaching: [
-          // ✅ Firebase Realtime Database caching
-          {
-            urlPattern: /^https:\/\/ems-pwa-5b6b0-default-rtdb\.europe-west1\.firebasedatabase\.app\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'firebase-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 24 * 60 * 60, // 1 day
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-
           // ✅ OpenStreetMap tile caching
           {
             urlPattern: /^https:\/\/[abc]\.tile\.openstreetmap\.org\/.*/i,

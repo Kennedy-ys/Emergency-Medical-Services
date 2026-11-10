@@ -92,6 +92,41 @@ export function useOpenRequests(enabled) {
   });
 }
 
+/** How long after a trip the driver is still asked for its record. */
+const RECORD_WINDOW_MS = 48 * 60 * 60 * 1000;
+
+/** This driver's recently completed trips that have no trip record yet, newest first. */
+export function useTripsNeedingRecord(userId) {
+  return useQuery({
+    queryKey: ['bookings', 'records-due', userId],
+    enabled: Boolean(userId),
+    queryFn: async () => {
+      const trips = await supabase
+        .from('bookings')
+        .select(
+          'id, contact_name, contact_phone, pickup_address, pickup_lat, pickup_lng, completed_at'
+        )
+        .eq('driver_id', userId)
+        .eq('status', 'completed')
+        .gte('completed_at', new Date(Date.now() - RECORD_WINDOW_MS).toISOString())
+        .order('completed_at', { ascending: false })
+        .limit(10);
+      if (trips.error) throw trips.error;
+      if (trips.data.length === 0) return [];
+      const records = await supabase
+        .from('patient_records')
+        .select('booking_id')
+        .in(
+          'booking_id',
+          trips.data.map((trip) => trip.id)
+        );
+      if (records.error) throw records.error;
+      const written = new Set(records.data.map((record) => record.booking_id));
+      return trips.data.filter((trip) => !written.has(trip.id));
+    },
+  });
+}
+
 // ------------------------------------------------------------------ changing
 
 function useDriverAction(mutationFn) {
@@ -122,6 +157,20 @@ export const useReleaseTrip = () =>
   useDriverAction((bookingId) =>
     rpc('release_booking', { p_booking_id: bookingId, p_reason: 'Released by driver' })
   );
+
+/** Saves the crew's record of a trip. Safe to retry: the same clientRequestId is stored once. */
+export const useSaveTripRecord = () =>
+  useDriverAction(async ({ clientRequestId, bookingId, userId, fullName, ...rest }) => {
+    const { error } = await supabase.from('patient_records').insert({
+      client_request_id: clientRequestId,
+      booking_id: bookingId,
+      recorded_by: userId,
+      full_name: fullName,
+      ...rest,
+    });
+    // 23505: this record was already stored by an earlier attempt.
+    if (error && error.code !== '23505') throw error;
+  });
 
 /** Sends a driver application. The account stays off the road until a dispatcher approves it. */
 export const useRegisterDriver = () =>

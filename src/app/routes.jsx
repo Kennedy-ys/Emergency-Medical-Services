@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { LoadingState } from '../components/ui/States';
 import RequireRole from './RequireRole';
-import LegacyFirebaseRoute from './LegacyFirebaseRoute';
 
 // The landing page stays in the main bundle so the first screen is fast.
 import Home from '../pages/Home';
@@ -15,23 +14,19 @@ const DriversPage = lazy(() => import('../features/admin/DriversPage'));
 const BookingsPage = lazy(() => import('../features/admin/BookingsPage'));
 const BookingDetailPage = lazy(() => import('../features/admin/BookingDetailPage'));
 const HospitalsAdminPage = lazy(() => import('../features/admin/HospitalsAdminPage'));
+const RecordsPage = lazy(() => import('../features/admin/RecordsPage'));
+const ReviewsPage = lazy(() => import('../features/admin/ReviewsPage'));
+const StaffPage = lazy(() => import('../features/admin/StaffPage'));
+const StaffWelcomePage = lazy(() => import('../features/auth/StaffWelcomePage'));
 const DriverHomePage = lazy(() => import('../features/driver/DriverHomePage'));
 const DriverRegisterPage = lazy(() => import('../features/driver/DriverRegisterPage'));
 const BookPage = lazy(() => import('../features/booking/BookPage'));
 const TrackPage = lazy(() => import('../features/tracking/TrackPage'));
 const TechnicianHomePage = lazy(() => import('../features/technician/TechnicianHomePage'));
 
-// --- Older screens still on Firebase. Each is replaced in its phase of the plan. ---
+// --- Older screens not yet rebuilt. Each is replaced in its phase of the plan. ---
 const TechnicianChat = lazy(() => import('../pages/TechnicianChat'));
 const FirstAidTips = lazy(() => import('../pages/FirstAidTips'));
-const AdminLogin = lazy(() => import('../pages/AdminLogin'));
-const AdminLayout = lazy(() => import('../admin/AdminLayout'));
-const AdminDashboard = lazy(() => import('../admin/AdminDashboard'));
-const PatientTable = lazy(() => import('../admin/PatientTable'));
-const MapView = lazy(() => import('../admin/MapView'));
-const SyncMonitor = lazy(() => import('../admin/SyncMonitor'));
-const ArchivedPatientsTable = lazy(() => import('../admin/ArchivedPatientsTable'));
-const ReviewModeration = lazy(() => import('../admin/ReviewModeration'));
 
 const admin = (page) => (
   <RequireRole roles={['admin']} loginPath="/staff/login">
@@ -60,6 +55,10 @@ export default function AppRoutes() {
         <Route path="/admin/bookings" element={admin(<BookingsPage />)} />
         <Route path="/admin/bookings/:bookingId" element={admin(<BookingDetailPage />)} />
         <Route path="/admin/hospitals" element={admin(<HospitalsAdminPage />)} />
+        <Route path="/admin/records" element={admin(<RecordsPage />)} />
+        <Route path="/admin/reviews" element={admin(<ReviewsPage />)} />
+        <Route path="/admin/staff" element={admin(<StaffPage />)} />
+        <Route path="/staff/welcome" element={<StaffWelcomePage />} />
         <Route
           path="/driver"
           element={
@@ -82,23 +81,9 @@ export default function AppRoutes() {
         <Route path="/driver/login" element={<Navigate to="/staff/login" replace />} />
         <Route path="/driver/*" element={<Navigate to="/driver" replace />} />
 
-        {/* Older admin area (Firebase) */}
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route
-          path="/admin"
-          element={
-            <LegacyFirebaseRoute>
-              <AdminLayout />
-            </LegacyFirebaseRoute>
-          }
-        >
-          <Route index element={<AdminDashboard />} />
-          <Route path="patients" element={<PatientTable />} />
-          <Route path="map" element={<MapView />} />
-          <Route path="sync" element={<SyncMonitor />} />
-          <Route path="archived" element={<ArchivedPatientsTable />} />
-          <Route path="reviews" element={<ReviewModeration />} />
-        </Route>
+        {/* Addresses from the old admin area */}
+        <Route path="/admin-login" element={<Navigate to="/staff/login" replace />} />
+        <Route path="/admin/*" element={<Navigate to="/admin/dispatch" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

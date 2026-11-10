@@ -6,7 +6,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import DispatchPage from './DispatchPage';
 import DriversPage from './DriversPage';
-import { formatElapsed } from './shared';
+import ReviewsPage from './ReviewsPage';
+import RecordsPage from './RecordsPage';
+import StaffPage from './StaffPage';
+import { formatElapsed, toCsv } from './shared';
 import { supabase } from '../../lib/supabase';
 
 vi.mock('react-hot-toast', () => ({ default: { error: vi.fn(), success: vi.fn() } }));
@@ -21,12 +24,17 @@ vi.mock('../../lib/supabase', () => ({
     rpc: vi.fn(),
     channel: vi.fn(),
     removeChannel: vi.fn(),
+    auth: { getSession: vi.fn() },
+    functions: { invoke: vi.fn() },
   },
   classifyError: (error) =>
     error?.code === 'P0001'
       ? { kind: 'business', code: error.message }
       : { kind: 'network', code: null },
 }));
+
+/** Every call chained on supabase.from(table), as [table, method, ...args]. */
+let tableCalls = [];
 
 /** Makes supabase.from(table) resolve to tables[table], whatever filters are chained on. */
 function mockTables(tables) {
@@ -37,7 +45,10 @@ function mockTables(tables) {
       {
         get: (_, key) => {
           if (key === 'then') return result.then.bind(result);
-          return () => query;
+          return (...args) => {
+            tableCalls.push([table, key, ...args]);
+            return query;
+          };
         },
       }
     );
@@ -87,6 +98,9 @@ const booking = (overrides) => ({
 beforeEach(() => {
   supabase.from.mockReset();
   supabase.rpc.mockReset();
+  supabase.functions.invoke.mockReset();
+  supabase.auth.getSession.mockResolvedValue({ data: { session: { user: { id: 'admin-1' } } } });
+  tableCalls = [];
   toast.error.mockReset();
   toast.success.mockReset();
   const channel = { on: () => channel, subscribe: () => channel };
@@ -215,5 +229,139 @@ describe('DispatchPage', () => {
     mockTables({ bookings: [], drivers: [] });
     renderPage(<DispatchPage />);
     expect(await screen.findByText('No requests in progress')).toBeInTheDocument();
+  });
+});
+
+describe('ReviewsPage', () => {
+  it('publishes a waiting review and records who decided', async () => {
+    mockTables({
+      reviews: [
+        {
+          id: 'r1',
+          display_name: 'Ada',
+          rating: 4,
+          comment: 'They came quickly.',
+          status: 'pending',
+          created_at: '2026-11-10T08:00:00Z',
+        },
+      ],
+    });
+    renderPage(<ReviewsPage />);
+
+    expect(await screen.findByText('They came quickly.')).toBeInTheDocument();
+    expect(screen.getByText('4 out of 5')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Publish' }));
+
+    await waitFor(() => {
+      const update = tableCalls.find(
+        ([table, method]) => table === 'reviews' && method === 'update'
+      );
+      expect(update?.[2]).toMatchObject({ status: 'approved', moderated_by: 'admin-1' });
+    });
+    expect(tableCalls).toContainEqual(['reviews', 'eq', 'id', 'r1']);
+  });
+
+  it('says so when nothing is waiting', async () => {
+    mockTables({ reviews: [] });
+    renderPage(<ReviewsPage />);
+    expect(await screen.findByText('No reviews are waiting.')).toBeInTheDocument();
+  });
+});
+
+describe('RecordsPage', () => {
+  it('lists crew records and archives one', async () => {
+    mockTables({
+      patient_records: [
+        {
+          id: 'p1',
+          booking_id: 'b1',
+          full_name: 'Eno Bassey',
+          age: 54,
+          gender: 'Female',
+          address: null,
+          phone: '08035550000',
+          notes: 'Fractured wrist',
+          is_archived: false,
+          created_at: '2026-11-10T08:00:00Z',
+          recorder: { full_name: 'Bassey Eyo' },
+        },
+      ],
+    });
+    renderPage(<RecordsPage />);
+
+    expect(await screen.findByText('Eno Bassey')).toBeInTheDocument();
+    expect(screen.getByText('54 years · Female')).toBeInTheDocument();
+    expect(screen.getByText(/by Bassey Eyo/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Archive' }));
+
+    await waitFor(() =>
+      expect(tableCalls).toContainEqual(['patient_records', 'update', { is_archived: true }])
+    );
+  });
+});
+
+describe('StaffPage', () => {
+  const fillIn = async () => {
+    await userEvent.type(await screen.findByLabelText('Full name'), 'Ima Udo');
+    await userEvent.type(screen.getByLabelText('Email'), 'Ima@Example.com');
+    await userEvent.click(screen.getByRole('button', { name: 'Send invitation' }));
+  };
+
+  it('lists staff and sends an invitation through the server function', async () => {
+    mockTables({
+      profiles: [{ id: 'a1', role: 'admin', full_name: 'Dee', created_at: '2026-11-09T08:00:00Z' }],
+    });
+    supabase.functions.invoke.mockResolvedValue({ data: { id: 'new' }, error: null });
+    renderPage(<StaffPage />);
+
+    expect(await screen.findByText('Dee')).toBeInTheDocument();
+    await fillIn();
+
+    await waitFor(() =>
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('invite-staff', {
+        body: { email: 'ima@example.com', full_name: 'Ima Udo', role: 'technician' },
+      })
+    );
+    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+  });
+
+  it('explains when the email already has an account', async () => {
+    mockTables({ profiles: [] });
+    supabase.functions.invoke.mockResolvedValue({
+      data: null,
+      error: { context: { json: async () => ({ error: 'already_registered' }) } },
+    });
+    renderPage(<StaffPage />);
+    await fillIn();
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('Someone with this email already has an account.')
+    );
+  });
+
+  it('does not send an invitation without a valid email', async () => {
+    mockTables({ profiles: [] });
+    renderPage(<StaffPage />);
+    await userEvent.type(await screen.findByLabelText('Full name'), 'Ima Udo');
+    await userEvent.click(screen.getByRole('button', { name: 'Send invitation' }));
+
+    expect(await screen.findByText('Enter a valid email address.')).toBeInTheDocument();
+    expect(supabase.functions.invoke).not.toHaveBeenCalled();
+  });
+});
+
+describe('toCsv', () => {
+  it('quotes awkward text and disarms spreadsheet formulas', () => {
+    const csv = toCsv(
+      [
+        { name: 'Obi, Ada', notes: 'Said "ouch"' },
+        { name: '=SUM(A1)', notes: null },
+      ],
+      [
+        ['Patient', (row) => row.name],
+        ['Notes', (row) => row.notes],
+      ]
+    );
+    expect(csv).toBe(`Patient,Notes\r\n"Obi, Ada","Said ""ouch"""\r\n'=SUM(A1),`);
   });
 });
