@@ -14,6 +14,7 @@ import { formatDistance, formatDuration } from '../../lib/geo';
 import { classifyError } from '../../lib/supabase';
 import { STATUS, STEPS, errorText, isFinished, patientCanCancel } from '../../lib/status';
 import { useBooking, useCancelBooking, useDriverLocation, useTripDriver } from '../booking/api';
+import PushOptIn from '../push/PushOptIn';
 
 function Progress({ step }) {
   return (
@@ -143,6 +144,12 @@ export default function TrackPage() {
           )}
           {status.step != null && <Progress step={status.step} />}
         </Card>
+
+        {!finished && (
+          <div className="mt-4">
+            <PushOptIn audience="patient" />
+          </div>
+        )}
 
         {driver && !finished && <DriverCard driver={driver} />}
 

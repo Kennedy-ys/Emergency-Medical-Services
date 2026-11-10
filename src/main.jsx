@@ -7,6 +7,8 @@ import { registerSW } from 'virtual:pwa-register';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import SessionProvider from './app/SessionProvider';
+// Imported for its effect: catches the browser's install offer as early as possible.
+import './lib/installPrompt';
 
 // auto-register and update
 registerSW({ immediate: true });

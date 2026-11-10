@@ -423,6 +423,68 @@ test('patient records: crew write, admins read all, patients neither', async () 
   assert.ok((await as(admin, (q) => q.rows(`select id from public.patient_records`))).length >= 1);
 });
 
+test('push: a device address follows whoever is signed in on it', async () => {
+  const first = await createUser();
+  const second = await createUser();
+  const save = (user, endpoint = 'https://fcm.googleapis.com/fcm/send/abc') =>
+    as(user, (q) => q.rpc('save_push_subscription', [endpoint, 'p'.repeat(87), 'a'.repeat(22), 'test']));
+
+  await fails(save(null), /permission denied/);
+  await fails(save(first, 'http://example.org/x'), /invalid_input/);
+
+  await save(first);
+  await save(first); // saving again is not an error
+  assert.equal((await as(first, (q) => q.rows(`select id from public.push_subscriptions`))).length, 1);
+
+  await save(second);
+  assert.equal((await as(first, (q) => q.rows(`select id from public.push_subscriptions`))).length, 0);
+  assert.equal((await as(second, (q) => q.rows(`select id from public.push_subscriptions`))).length, 1);
+
+  await as(second, (q) => q.rows(`delete from public.push_subscriptions`));
+  assert.equal((await db.query(`select id from public.push_subscriptions`)).rows.length, 0);
+});
+
+test('push: each booking event asks for a push once the address is set, and never blocks', async () => {
+  // Stand-in for pg_net, which PGlite does not have.
+  await db.exec(`
+    create schema net;
+    create table net.calls (url text, body jsonb);
+    create function net.http_post(url text, body jsonb, headers jsonb) returns bigint
+    language plpgsql as $$
+    begin
+      if url like '%/broken' then raise exception 'network down'; end if;
+      insert into net.calls values (url, body);
+      return 1;
+    end $$;
+  `);
+  const calls = async () => (await db.query(`select url, body from net.calls`)).rows;
+
+  // No address configured: nothing is attempted.
+  await request(await createUser());
+  assert.equal((await calls()).length, 0);
+
+  await db.exec(`insert into private.push_config (function_url) values ('https://x.test/push-notify')`);
+  const booking = await request(await createUser());
+  const queued = await calls();
+  assert.equal(queued.length, 1);
+  const event = (
+    await db.query(`select id, notified_at from public.booking_events where booking_id = $1`, [booking.id])
+  ).rows[0];
+  assert.equal(Number(queued[0].body.event_id), Number(event.id));
+  assert.equal(event.notified_at, null);
+
+  // A failing request must not undo the booking.
+  await db.exec(`update private.push_config set function_url = 'https://x.test/broken'`);
+  const kept = await request(await createUser());
+  assert.equal(kept.status, 'pending');
+  assert.equal((await calls()).length, 1);
+
+  // Clients cannot see or change where pushes are sent.
+  const user = await createUser();
+  await fails(as(user, (q) => q.rows(`select * from private.push_config`)), /permission denied/);
+  await db.exec(`delete from private.push_config`);
+});
+
 // ------------------------------------------------------------------ run
 
 let failed = 0;

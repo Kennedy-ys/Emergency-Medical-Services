@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ensureSession, supabase } from '../lib/supabase';
 import { SessionContext } from '../lib/sessionContext';
+import { getPushSubscription } from '../lib/pushDevice';
 
 async function loadAccount(userId) {
   const { data: profile, error } = await supabase
@@ -81,6 +82,19 @@ export default function SessionProvider({ children }) {
       /** Returns the current user, creating an anonymous session if there is none. */
       ensureSession,
       signOut: async () => {
+        // Stop this device receiving alerts meant for the account being left.
+        // Best effort: signing out must work even when this cannot be done.
+        try {
+          const subscription = await getPushSubscription();
+          if (subscription) {
+            await supabase
+              .from('push_subscriptions')
+              .delete()
+              .eq('endpoint', subscription.endpoint);
+          }
+        } catch {
+          // Carry on with the sign-out.
+        }
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
       },
