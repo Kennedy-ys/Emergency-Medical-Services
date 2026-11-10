@@ -49,7 +49,9 @@ npm run dev
 | `/staff/login` | Sign-in for drivers, technicians and dispatchers (Supabase) |
 | `/driver` | Driver: go on duty, accept requests, run a trip |
 | `/driver/register` | Driver application (approved by a dispatcher) |
-| `/admin/dispatch`, `/technician` | Role-guarded staff areas (placeholders until their phase) |
+| `/admin/dispatch` | Dispatcher: live map, waiting requests, assign and cancel |
+| `/admin/bookings`, `/admin/drivers`, `/admin/hospitals` | Dispatcher: request history, driver approval, hospital list |
+| `/technician` | Technician area (placeholder until its phase) |
 | `/admin-login`, `/admin` | Older admin console (Firebase) |
 
 ## Secrets

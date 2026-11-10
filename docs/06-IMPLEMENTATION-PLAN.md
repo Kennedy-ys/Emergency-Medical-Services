@@ -81,11 +81,13 @@ The product's reason to exist. PRD: P-1 to P-5, D-2, D-3, D-5, D-6.
 PRD: A-1 to A-9, D-1.
 
 - [x] `register_driver`, driver application screen and "awaiting approval" state (done in Phase 2).
-- [ ] `/admin/drivers`: approve, suspend.
-- [ ] `/admin/dispatch`: live map, unassigned queue with timers, `nearest_drivers`, `assign_booking`, cancel.
-- [ ] `/admin/bookings` list and detail with the `booking_events` timeline.
-- [ ] Port hospitals, reviews and records screens to Supabase behind the admin role.
-- [ ] `invite-staff` function and `/admin/staff`.
+- [x] `/admin/drivers`: approve, turn down, suspend with a reason, reinstate.
+- [x] `/admin/dispatch`: live map of requests and on-duty ambulances, unassigned queue with waiting timers (called out after 2 minutes), `nearest_drivers`, `assign_booking` (assign and reassign), cancel with a reason.
+- [x] `/admin/bookings` list with filters, and detail with the `booking_events` timeline.
+- [x] Hospitals at `/admin/hospitals` on Supabase (add, edit, hide from patients); the old Firebase hospital manager is removed.
+- [ ] Owner: create the first admin account (see Phase 1), sign in at `/staff/login` and try each admin screen. They are covered by unit tests with a mocked server but **have not been opened against the live project**.
+- [ ] Port the reviews and patient records screens to Supabase behind the admin role. Still on Firebase at `/admin`.
+- [ ] `invite-staff` function and `/admin/staff`. Needs a server-side function holding the service role key.
 
 **Done when:** a new driver cannot see requests until approved; a dispatcher can assign and reassign a waiting request and sees every change in the timeline.
 

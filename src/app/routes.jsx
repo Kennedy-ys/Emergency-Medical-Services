@@ -11,6 +11,10 @@ import Home from '../pages/Home';
 const HospitalsPage = lazy(() => import('../features/hospitals/HospitalsPage'));
 const StaffLoginPage = lazy(() => import('../features/auth/StaffLoginPage'));
 const DispatchPage = lazy(() => import('../features/admin/DispatchPage'));
+const DriversPage = lazy(() => import('../features/admin/DriversPage'));
+const BookingsPage = lazy(() => import('../features/admin/BookingsPage'));
+const BookingDetailPage = lazy(() => import('../features/admin/BookingDetailPage'));
+const HospitalsAdminPage = lazy(() => import('../features/admin/HospitalsAdminPage'));
 const DriverHomePage = lazy(() => import('../features/driver/DriverHomePage'));
 const DriverRegisterPage = lazy(() => import('../features/driver/DriverRegisterPage'));
 const BookPage = lazy(() => import('../features/booking/BookPage'));
@@ -28,7 +32,12 @@ const MapView = lazy(() => import('../admin/MapView'));
 const SyncMonitor = lazy(() => import('../admin/SyncMonitor'));
 const ArchivedPatientsTable = lazy(() => import('../admin/ArchivedPatientsTable'));
 const ReviewModeration = lazy(() => import('../admin/ReviewModeration'));
-const AdminHospitalManager = lazy(() => import('../admin/AdminHospitalManager'));
+
+const admin = (page) => (
+  <RequireRole roles={['admin']} loginPath="/staff/login">
+    {page}
+  </RequireRole>
+);
 
 export default function AppRoutes() {
   return (
@@ -46,14 +55,11 @@ export default function AppRoutes() {
 
         {/* Staff areas on Supabase */}
         <Route path="/staff/login" element={<StaffLoginPage />} />
-        <Route
-          path="/admin/dispatch"
-          element={
-            <RequireRole roles={['admin']} loginPath="/staff/login">
-              <DispatchPage />
-            </RequireRole>
-          }
-        />
+        <Route path="/admin/dispatch" element={admin(<DispatchPage />)} />
+        <Route path="/admin/drivers" element={admin(<DriversPage />)} />
+        <Route path="/admin/bookings" element={admin(<BookingsPage />)} />
+        <Route path="/admin/bookings/:bookingId" element={admin(<BookingDetailPage />)} />
+        <Route path="/admin/hospitals" element={admin(<HospitalsAdminPage />)} />
         <Route
           path="/driver"
           element={
@@ -92,7 +98,6 @@ export default function AppRoutes() {
           <Route path="sync" element={<SyncMonitor />} />
           <Route path="archived" element={<ArchivedPatientsTable />} />
           <Route path="reviews" element={<ReviewModeration />} />
-          <Route path="hospitals" element={<AdminHospitalManager />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

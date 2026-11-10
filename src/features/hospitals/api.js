@@ -11,6 +11,8 @@ async function fetchHospitals() {
   const { data, error } = await supabase
     .from('hospitals')
     .select('id, name, address, phone, lat, lng')
+    // Dispatchers are allowed to read archived hospitals; the public list never shows them.
+    .eq('is_archived', false)
     .order('name');
   if (error) throw error;
   return data;
