@@ -4,7 +4,7 @@ A running record of what has been built, what was checked and how, what was deci
 
 ## Current phase
 
-Phase 5 (push notifications) is built, switched on for the live project and waiting to be merged (2026-11-10).
+Phase 5 (push notifications) is built, switched on for the live project and merged (2026-11-10). Phase 6 is next.
 
 | Phase | What | State |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ Phase 5 (push notifications) is built, switched on for the live project and wait
 | 2 | Core emergency loop | Done. Two-phone and airplane-mode test open. |
 | 3 | Admin dispatch console | Done. Some live checks by the owner open. |
 | 4 | Patient accounts | Not started. Blocked on choosing an SMS provider. |
-| 5 | Push notifications | Built and switched on. PR 5 open. |
+| 5 | Push notifications | Done. Hosted-app phone test open. |
 | 6 | Technician chat | Not started |
 | 7 | Records and pilot hardening | Not started (crew trip records and CSV export were brought forward into Phase 3) |
 
@@ -32,7 +32,8 @@ Phase 5 (push notifications) is built, switched on for the live project and wait
 | 2 | `phase-2-emergency-loop` | Request, track, driver screens, offline outbox | Merged 2026-11-10 |
 | 3 | `phase-3-admin-dispatch` | Dispatch console, drivers, requests, hospitals | Merged 2026-11-10 |
 | 4 | `phase-3-staff-records-reviews` | Reviews, trip records, staff invitations, Firebase removed | Merged 2026-11-10 |
-| 5 | `phase-5-push` | Push notifications | Open |
+| 5 | `phase-5-push` | Push notifications | Merged 2026-11-10 |
+| 6 | `docs-build-status` | This document | Open |
 
 ### Deployed to the live Supabase project
 
@@ -157,5 +158,5 @@ Phase 5 (push notifications) is built, switched on for the live project and wait
 
 ## Next stage
 
-1. Merge PR 5 once CI is green.
-2. Phase 6 (technician chat) can start now. Phase 4 (patient accounts) starts once the SMS provider is chosen.
+1. Phase 6 (technician chat) can start now.
+2. Phase 4 (patient accounts) starts once the SMS provider is chosen.
