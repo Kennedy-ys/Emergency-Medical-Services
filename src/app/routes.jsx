@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { LoadingState } from '../components/ui/States';
 import RequireRole from './RequireRole';
 import LegacyFirebaseRoute from './LegacyFirebaseRoute';
-import DriverProtectedRoute from '../components/DriverProtectedRoute';
 
 // The landing page stays in the main bundle so the first screen is fast.
 import Home from '../pages/Home';
@@ -13,20 +12,15 @@ const HospitalsPage = lazy(() => import('../features/hospitals/HospitalsPage'));
 const StaffLoginPage = lazy(() => import('../features/auth/StaffLoginPage'));
 const DispatchPage = lazy(() => import('../features/admin/DispatchPage'));
 const DriverHomePage = lazy(() => import('../features/driver/DriverHomePage'));
+const DriverRegisterPage = lazy(() => import('../features/driver/DriverRegisterPage'));
+const BookPage = lazy(() => import('../features/booking/BookPage'));
+const TrackPage = lazy(() => import('../features/tracking/TrackPage'));
 const TechnicianHomePage = lazy(() => import('../features/technician/TechnicianHomePage'));
 
 // --- Older screens still on Firebase. Each is replaced in its phase of the plan. ---
-const AmbulanceBooking = lazy(() => import('../pages/AmbulanceBooking'));
-const LiveTrackingPage = lazy(() => import('../pages/LiveTrackingPage'));
 const TechnicianChat = lazy(() => import('../pages/TechnicianChat'));
 const FirstAidTips = lazy(() => import('../pages/FirstAidTips'));
 const AdminLogin = lazy(() => import('../pages/AdminLogin'));
-const DriverRegistration = lazy(() => import('../driver/DriverRegistration'));
-const DriverLogin = lazy(() => import('../driver/DriverLogin'));
-const DriverDashboard = lazy(() => import('../driver/DriverDashboard'));
-const DriverBookings = lazy(() => import('../driver/DriverBookings'));
-const DriverProfile = lazy(() => import('../driver/DriverProfile'));
-const DriverTrackingPage = lazy(() => import('../driver/DriverTrackingPage'));
 const AdminLayout = lazy(() => import('../admin/AdminLayout'));
 const AdminDashboard = lazy(() => import('../admin/AdminDashboard'));
 const PatientTable = lazy(() => import('../admin/PatientTable'));
@@ -35,8 +29,6 @@ const SyncMonitor = lazy(() => import('../admin/SyncMonitor'));
 const ArchivedPatientsTable = lazy(() => import('../admin/ArchivedPatientsTable'));
 const ReviewModeration = lazy(() => import('../admin/ReviewModeration'));
 const AdminHospitalManager = lazy(() => import('../admin/AdminHospitalManager'));
-
-const legacyDriver = (page) => <DriverProtectedRoute>{page}</DriverProtectedRoute>;
 
 export default function AppRoutes() {
   return (
@@ -47,8 +39,9 @@ export default function AppRoutes() {
         <Route path="/hospitals" element={<HospitalsPage />} />
         <Route path="/locate-hospitals" element={<Navigate to="/hospitals" replace />} />
         <Route path="/first-aid-tips" element={<FirstAidTips />} />
-        <Route path="/ambulance-booking" element={<AmbulanceBooking />} />
-        <Route path="/track/:bookingId" element={<LiveTrackingPage />} />
+        <Route path="/book" element={<BookPage />} />
+        <Route path="/ambulance-booking" element={<Navigate to="/book" replace />} />
+        <Route path="/track/:bookingId" element={<TrackPage />} />
         <Route path="/technician-chat" element={<TechnicianChat />} />
 
         {/* Staff areas on Supabase */}
@@ -78,13 +71,10 @@ export default function AppRoutes() {
           }
         />
 
-        {/* Older driver area (Firebase) */}
-        <Route path="/driver/register" element={<DriverRegistration />} />
-        <Route path="/driver/login" element={<DriverLogin />} />
-        <Route path="/driver/dashboard" element={legacyDriver(<DriverDashboard />)} />
-        <Route path="/driver/bookings" element={legacyDriver(<DriverBookings />)} />
-        <Route path="/driver/profile" element={legacyDriver(<DriverProfile />)} />
-        <Route path="/driver/track/:bookingId" element={legacyDriver(<DriverTrackingPage />)} />
+        <Route path="/driver/register" element={<DriverRegisterPage />} />
+        {/* Addresses from the old driver app */}
+        <Route path="/driver/login" element={<Navigate to="/staff/login" replace />} />
+        <Route path="/driver/*" element={<Navigate to="/driver" replace />} />
 
         {/* Older admin area (Firebase) */}
         <Route path="/admin-login" element={<AdminLogin />} />

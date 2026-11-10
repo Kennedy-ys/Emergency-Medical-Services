@@ -66,7 +66,7 @@ export default function HomePage() {
       desc: "Quickly request emergency transportation services directly from your location.",
       img: ambulanceImg,
       btn: "🚑 Book Now",
-      onClick: () => navigate("/ambulance-booking"),
+      onClick: () => navigate("/book"),
     },
     {
       title: "Contact A Technician",
@@ -206,7 +206,7 @@ export default function HomePage() {
             <div className="flex gap-4 justify-center md:justify-start flex-wrap">
               <button
                 className="bg-blue-600 font-medium text-white px-6 py-3 rounded-md hover:bg-blue-700 transition"
-                onClick={() => navigate("/ambulance-booking")}
+                onClick={() => navigate("/book")}
               >
                 🚑 Book Ambulance
               </button>

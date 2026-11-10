@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { ensureSession, supabase } from '../lib/supabase';
 import { SessionContext } from '../lib/sessionContext';
 
 async function loadAccount(userId) {
@@ -79,13 +79,7 @@ export default function SessionProvider({ children }) {
       driver,
       refreshProfile,
       /** Returns the current user, creating an anonymous session if there is none. */
-      ensureSession: async () => {
-        const { data } = await supabase.auth.getSession();
-        if (data.session?.user) return data.session.user;
-        const { data: created, error } = await supabase.auth.signInAnonymously();
-        if (error) throw error;
-        return created.user;
-      },
+      ensureSession,
       signOut: async () => {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
