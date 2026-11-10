@@ -14,7 +14,9 @@ const BOOKING_COLUMNS =
   'id, status, contact_name, contact_phone, notes, pickup_lat, pickup_lng, pickup_address, ' +
   'driver_id, created_at, assigned_at, arrived_at, departed_at, completed_at, cancelled_at, ' +
   'cancel_reason, hospital:hospitals(id, name, address, lat, lng), ' +
-  'driver:drivers(id, ambulance_number, license_plate, profile:profiles(full_name, phone))';
+  // The foreign key is named because bookings also reach drivers through booking_declines.
+  'driver:drivers!bookings_driver_id_fkey(id, ambulance_number, license_plate, ' +
+  'profile:profiles(full_name, phone))';
 
 const DRIVER_COLUMNS =
   'id, ambulance_number, license_plate, approval_status, approval_note, availability, ' +
