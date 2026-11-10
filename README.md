@@ -16,6 +16,8 @@ The app is being rebuilt for a real pilot and now runs entirely on Supabase; Fir
 | [Front-end Guidelines](docs/04-FRONTEND-GUIDELINES.md) | Structure, design tokens, coding rules |
 | [Backend Schema](docs/05-BACKEND-SCHEMA.md) | Tables, access rules, server functions |
 | [Implementation Plan](docs/06-IMPLEMENTATION-PLAN.md) | Phases, checklists, decisions, risks |
+| [Push Setup](docs/07-PUSH-SETUP.md) | How push notifications work and how to switch them on |
+| [Build Status](docs/08-BUILD-STATUS.md) | What is built, what was checked, decisions, open items |
 
 ## Running locally
 
