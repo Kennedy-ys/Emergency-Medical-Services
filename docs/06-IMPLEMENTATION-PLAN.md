@@ -42,17 +42,18 @@ Do this before any new work; it does not depend on the migration.
 
 ## Phase 1 — Foundation on Supabase (L)
 
-- [ ] Create Supabase projects (staging, production) after a latency check; apply the migrations and seed to staging. *(Owner creates the project. Docker is not installed on the dev machine, so there is no local Supabase stack; the database tests run on an in-process Postgres instead.)*
+- [x] Create the Supabase project; apply the migrations and seed; enable anonymous sign-ins. Verified live on 2026-11-10. Still to do: a separate production project before the pilot. *(Owner creates the project. Docker is not installed on the dev machine, so there is no local Supabase stack; the database tests run on an in-process Postgres instead.)*
 - [x] Migrations in `supabase/migrations/`: types, tables, indexes, `handle_new_user` trigger, all server functions (including the Phase 2 booking functions).
 - [x] Access rules for every table, with tests that act as each role (`npm run test:db`, 15 passing).
 - [x] Seed script: the five Calabar hospitals from the old booking page. Still to do: replace with an export of the managed list from Firebase.
 - [x] Add `@supabase/supabase-js`, TanStack Query; `.env.example`.
-- [ ] Add React Hook Form, Zod, Prettier, Vitest; remove unused packages (Tech Stack section 2).
-- [x] `lib/supabase.js`, `SessionProvider`, `useSession`, `RequireRole` (written, not yet wired into the app).
-- [ ] Restructure `src/` to the layout in [Front-end Guidelines](04-FRONTEND-GUIDELINES.md); wire the providers and a single route table with lazy-loaded areas.
-- [ ] Design tokens and the `components/ui` kit; `BaseMap`, markers, `useGeolocation`.
-- [ ] `/staff/login` on Supabase; anonymous sign-in on first request.
-- [ ] CI: lint, test, build.
+- [x] Add React Hook Form, Zod, Prettier, Vitest; remove unused packages (Tech Stack section 2). Prettier covers the rebuilt folders only; older screens are formatted when they are rebuilt.
+- [x] `lib/supabase.js`, `SessionProvider`, `useSession`, `RequireRole`, wired into the app.
+- [x] Target layout in place (`src/app`, `features`, `components/{ui,map,layout}`, `lib`, `hooks`, `styles`); providers wired; one route table (`src/app/routes.jsx`) with lazy-loaded screens. Older Firebase screens stay in `src/pages`, `src/driver` and `src/admin` until the phase that rebuilds them, rather than being moved twice.
+- [x] Design tokens and the `components/ui` kit (Button, Field, Card, Spinner, loading/empty/error states); `BaseMap`, `RouteLayer`, `FitBounds`, markers, `useGeolocation`, `OfflineBanner`. Select, Badge, Dialog and Sheet are added when a screen first needs them.
+- [x] `/staff/login` on Supabase with role-guarded `/admin/dispatch`, `/driver`, `/technician` (placeholder pages). Anonymous sign-in is available as `ensureSession()` and is first used by the request form in Phase 2.
+- [ ] Owner: create the first admin account in the Supabase dashboard and promote it with the SQL in `supabase/seed.sql`; sign in at `/staff/login` to confirm.
+- [x] CI: lint, format check, unit tests, database tests, build (`.github/workflows/ci.yml`).
 
 **Done when:** a seeded admin and a seeded driver can sign in and each reaches only their own area; a signed-out visitor sees the landing page and the hospital list from Supabase; RLS tests pass.
 

@@ -87,7 +87,7 @@ export default function HomePage() {
       desc: "Find the closest hospital or emergency clinic near you using GPS.",
       img: hospitalImg,
       btn: "📍 Locate",
-      onClick: () => navigate("/locate-hospitals"),
+      onClick: () => navigate("/hospitals"),
     },
   ];
 

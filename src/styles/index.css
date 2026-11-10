@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+/* Design tokens. See docs/04-FRONTEND-GUIDELINES.md section 3. */
+@theme {
+  --color-brand: #2563eb;
+  --color-brand-hover: #1d4ed8;
+  --color-brand-tint: #eff6ff;
+  --color-emergency: #dc2626;
+  --color-emergency-hover: #b91c1c;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+}
+
+/* Older screens rely on these two map rules; remove them once those screens are rebuilt. */
+.leaflet-container {
+  color: white;
+  border-radius: 0.5rem;
+}
+
+.leaflet-container a {
+  color: white;
+}
+
+/* Keep the map's own controls readable despite the rule above. */
+.leaflet-container .leaflet-bar a {
+  color: black;
+}
+
+.leaflet-container .leaflet-control-attribution a {
+  color: #0078a8;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.flash-animation {
+  animation: flash-bg 0.5s ease-in-out 4;
+}
+
+@keyframes flash-bg {
+  0%,
+  100% {
+    background-color: white;
+  }
+  50% {
+    background-color: #ffe600;
+  }
+}

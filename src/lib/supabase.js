@@ -6,7 +6,7 @@ const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 if (!url || !anonKey) {
   throw new Error(
     'Supabase is not configured. Copy .env.example to .env.local and fill in ' +
-      'VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.',
+      'VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
   );
 }
 

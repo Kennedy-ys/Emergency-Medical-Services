@@ -7,14 +7,16 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "format": "prettier --write src/app src/features src/components/ui src/components/map src/components/layout src/lib src/styles src/test src/hooks/useGeolocation.js src/hooks/useOnline.js src/hooks/useSession.js src/main.jsx vitest.config.js",
+    "format:check": "prettier --check src/app src/features src/components/ui src/components/map src/components/layout src/lib src/styles src/test src/hooks/useGeolocation.js src/hooks/useOnline.js src/hooks/useSession.js src/main.jsx vitest.config.js",
+    "test": "vitest run",
     "test:db": "node supabase/tests/db.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor/geolocation": "^7.1.4",
-    "@fortawesome/fontawesome-free": "^7.0.0",
     "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
+    "@hookform/resolvers": "^7.0.5",
     "@supabase/supabase-js": "^2.119.0",
     "@tailwindcss/vite": "^4.1.11",
     "@tanstack/react-query": "^5.107.1",
@@ -27,25 +29,24 @@
     "papaparse": "^5.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-feather": "^2.0.10",
+    "react-hook-form": "^7.91.0",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.6.0",
     "react-scroll": "^1.9.3",
-    "tailwind-scrollbar-hide": "^4.0.0",
     "tailwindcss": "^4.1.11",
     "typewriter-effect": "^2.22.0",
     "uuid": "^11.1.0",
-    "workbox-core": "^7.3.0",
-    "workbox-precaching": "^7.3.0",
-    "workbox-routing": "^7.3.0",
-    "workbox-strategies": "^7.3.0"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.16",
     "@eslint/js": "^9.25.0",
     "@tailwindcss/postcss": "^4.1.11",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.9",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
@@ -54,10 +55,12 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "jsdom": "^31.0.0",
     "postcss": "^8.5.6",
+    "prettier": "^3.9.10",
     "tailwindcss": "^4.1.11",
     "vite": "^6.3.5",
     "vite-plugin-pwa": "^1.0.0",
-    "workbox-cli": "^2.1.3"
+    "vitest": "^5.1.0"
   }
 }

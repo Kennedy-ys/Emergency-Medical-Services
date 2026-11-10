@@ -31,3 +31,4 @@ set-admin-claim/serviceAccountKey.json
 .env
 .env.*
 !.env.example
+supabase/.temp

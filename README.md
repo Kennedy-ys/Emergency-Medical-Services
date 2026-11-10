@@ -4,7 +4,7 @@ An installable web app (PWA) for requesting an ambulance in Calabar, Nigeria: pa
 
 ## Status
 
-The app is being rebuilt for a real pilot and moved from Firebase to Supabase. Work happens on the `supabase-migration` branch and follows the implementation plan below. Until Phase 1 lands, the code still talks to Firebase Realtime Database.
+The app is being rebuilt for a real pilot and moved from Firebase to Supabase. Work happens on the `supabase-migration` branch and follows the implementation plan below. Phase 1 (the Supabase foundation) is in place: the hospital finder and staff sign-in run on Supabase. Requesting, tracking, the driver screens and the admin console still talk to Firebase until their phase.
 
 ## Documentation
 
@@ -23,6 +23,7 @@ Requires Node.js 20 or later.
 
 ```bash
 npm install
+cp .env.example .env.local   # then fill in the Supabase URL and publishable key
 npm run dev
 ```
 
@@ -32,6 +33,9 @@ npm run dev
 | `npm run build` | Production build into `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm run lint` | Run ESLint |
+| `npm run format` | Format the rebuilt code with Prettier |
+| `npm test` | Unit and component tests (Vitest) |
+| `npm run test:db` | Database access-rule tests on an in-process Postgres |
 
 ## Main routes (current)
 
@@ -40,10 +44,13 @@ npm run dev
 | `/` | Landing page |
 | `/ambulance-booking` | Request an ambulance |
 | `/track/:bookingId` | Patient tracking |
-| `/locate-hospitals`, `/first-aid-tips`, `/technician-chat` | Hospitals, first aid, chat (mock) |
-| `/driver/register`, `/driver/login`, `/driver/*` | Driver app |
-| `/admin-login`, `/admin/*` | Admin console |
+| `/hospitals` | Hospital finder (Supabase) |
+| `/first-aid-tips`, `/technician-chat` | First aid, chat (mock) |
+| `/staff/login` | Sign-in for drivers, technicians and dispatchers (Supabase) |
+| `/admin/dispatch`, `/driver`, `/technician` | Role-guarded staff areas (placeholders until their phase) |
+| `/driver/register`, `/driver/login`, `/driver/dashboard` … | Older driver app (Firebase) |
+| `/admin-login`, `/admin` | Older admin console (Firebase) |
 
 ## Secrets
 
-Never commit keys or service account files. Browser configuration will move to `.env.local` in Phase 1 (see Tech Stack, section 9).
+Never commit keys or service account files. Browser configuration lives in `.env.local` (git-ignored); only the Supabase URL and publishable key belong there. See Tech Stack, section 9.
