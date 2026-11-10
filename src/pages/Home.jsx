@@ -24,10 +24,8 @@ export default function HomePage() {
   const [reviewStars, setReviewStars] = useState(5);
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
 
   const servicesScrollRef = useRef(null);
-  const toggleMenu = () => setIsOpen(!isOpen);
 
   useEffect(() => {
     AOS.init({ duration: 800 });
@@ -89,7 +87,7 @@ export default function HomePage() {
       desc: "Find the closest hospital or emergency clinic near you using GPS.",
       img: hospitalImg,
       btn: "📍 Locate",
-      onClick: () => navigate("/locate-hospitals"),
+      onClick: () => navigate("/hospitals"),
     },
   ];
 
