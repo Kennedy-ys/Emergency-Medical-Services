@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import StaffShell from '../../components/layout/StaffShell';
 import Button from '../../components/ui/Button';
@@ -9,6 +10,8 @@ import { classifyError } from '../../lib/supabase';
 import { errorText } from '../../lib/status';
 import { useDriverHeartbeat, useMyDriver, useMyTrip, useSetAvailability } from './api';
 import OpenRequests from './OpenRequests';
+import RecordsDue from './RecordsDue';
+import TripRecordForm from './TripRecordForm';
 import TripPanel from './TripPanel';
 
 const LOCATION_PROBLEM = {
@@ -25,6 +28,9 @@ export default function DriverHomePage() {
   const driver = useMyDriver(user?.id);
   const trip = useMyTrip(user?.id);
   const setAvailability = useSetAvailability();
+  // The completed trip whose record is being written. Shown on this screen, not a new
+  // one, so location sharing carries on while the driver types.
+  const [recordFor, setRecordFor] = useState(null);
 
   const availability = driver.data?.availability ?? 'offline';
   const onDuty = availability !== 'offline';
@@ -74,6 +80,8 @@ export default function DriverHomePage() {
     );
   } else if (trip.data) {
     body = <TripPanel trip={trip.data} position={position} />;
+  } else if (recordFor) {
+    body = <TripRecordForm trip={recordFor} userId={user.id} onDone={() => setRecordFor(null)} />;
   } else {
     body = (
       <div className="space-y-4">
@@ -101,12 +109,13 @@ export default function DriverHomePage() {
           <p className="text-gray-600">You are offline. Reconnect to change your status.</p>
         )}
         {onDuty && <OpenRequests position={position} />}
+        <RecordsDue userId={user.id} onWrite={setRecordFor} />
       </div>
     );
   }
 
   return (
-    <StaffShell title={trip.data ? 'Current trip' : 'Requests'}>
+    <StaffShell title={trip.data ? 'Current trip' : recordFor ? 'Trip record' : 'Requests'}>
       {onDuty && problem && (
         <p
           className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-gray-900"

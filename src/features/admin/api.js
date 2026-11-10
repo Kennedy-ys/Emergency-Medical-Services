@@ -8,6 +8,9 @@ export const ADMIN_NAV = [
   { to: '/admin/bookings', label: 'Requests' },
   { to: '/admin/drivers', label: 'Drivers' },
   { to: '/admin/hospitals', label: 'Hospitals' },
+  { to: '/admin/records', label: 'Records' },
+  { to: '/admin/reviews', label: 'Reviews' },
+  { to: '/admin/staff', label: 'Staff' },
 ];
 
 const BOOKING_COLUMNS =
@@ -173,6 +176,65 @@ export function useAllHospitals() {
   });
 }
 
+export const REVIEW_FILTERS = {
+  pending: 'Waiting',
+  approved: 'Published',
+  rejected: 'Rejected',
+};
+
+/** Reviews in one moderation state, newest first. */
+export function useReviews(status) {
+  return useQuery({
+    queryKey: ['admin', 'reviews', status],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('id, display_name, rating, comment, status, created_at, moderated_at')
+        .eq('status', status)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+/** Trip records written by ambulance crews, newest first. */
+export function usePatientRecords(archived) {
+  return useQuery({
+    queryKey: ['admin', 'records', archived],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('patient_records')
+        .select(
+          'id, booking_id, full_name, age, gender, address, phone, notes, is_archived, ' +
+            'created_at, recorder:profiles(full_name)'
+        )
+        .eq('is_archived', archived)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data.map((row) => ({ ...row, recorder: one(row.recorder) }));
+    },
+  });
+}
+
+/** Dispatchers and technicians. Drivers have their own screen. */
+export function useStaff() {
+  return useQuery({
+    queryKey: ['admin', 'staff'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, role, full_name, phone, created_at')
+        .in('role', ['admin', 'technician'])
+        .order('created_at');
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 // ------------------------------------------------------------------ changing
 
 function useAdminAction(mutationFn, keys = [['admin']]) {
@@ -223,4 +285,69 @@ export const useArchiveHospital = () =>
       if (error) throw error;
     },
     [['admin', 'hospitals'], ['hospitals']]
+  );
+
+/** Publishes or rejects a review, recording who decided. */
+export const useModerateReview = () =>
+  useAdminAction(
+    async ({ id, status }) => {
+      const { data } = await supabase.auth.getSession();
+      const { error } = await supabase
+        .from('reviews')
+        .update({
+          status,
+          moderated_by: data.session?.user.id ?? null,
+          moderated_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    [['admin', 'reviews'], ['reviews']]
+  );
+
+/** Moves a trip record out of, or back into, the current list. Nothing is deleted. */
+export const useArchiveRecord = () =>
+  useAdminAction(
+    async ({ id, archived }) => {
+      const { error } = await supabase
+        .from('patient_records')
+        .update({ is_archived: archived })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    [['admin', 'records']]
+  );
+
+const INVITE_ERRORS = {
+  already_registered: 'Someone with this email already has an account.',
+  not_admin: 'Only a dispatcher can invite staff.',
+  invalid_input: 'Check the name and email address and try again.',
+};
+
+/** Words for a failed invitation. */
+export function inviteErrorMessage(error) {
+  return (
+    INVITE_ERRORS[error?.code] ??
+    'Could not send the invitation. Check your connection and try again.'
+  );
+}
+
+/** Emails an invitation; the account is created with the chosen role by the invite-staff function. */
+export const useInviteStaff = () =>
+  useAdminAction(
+    async ({ email, fullName, role }) => {
+      const { error } = await supabase.functions.invoke('invite-staff', {
+        body: { email, full_name: fullName, role },
+      });
+      if (!error) return;
+      // The function answers refusals with { error: 'code' }.
+      let code = null;
+      try {
+        code = (await error.context?.json())?.error ?? null;
+      } catch {
+        // Not a JSON answer: treat as a connection problem.
+      }
+      throw Object.assign(new Error('invite_failed'), { code });
+    },
+    [['admin', 'staff']]
   );

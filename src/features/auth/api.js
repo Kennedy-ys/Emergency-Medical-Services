@@ -27,6 +27,16 @@ export function useStaffSignUp() {
   return useMutation({ mutationFn: signUpStaff });
 }
 
+/** Sets the password of the signed-in account, used after following an invitation link. */
+export function useSetPassword() {
+  return useMutation({
+    mutationFn: async (password) => {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+    },
+  });
+}
+
 export function signUpErrorMessage(error) {
   if (error?.code === 'user_already_exists' || error?.code === 'email_exists') {
     return 'An account with this email already exists. Sign in instead.';

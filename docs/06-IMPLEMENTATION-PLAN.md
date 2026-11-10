@@ -85,9 +85,17 @@ PRD: A-1 to A-9, D-1.
 - [x] `/admin/dispatch`: live map of requests and on-duty ambulances, unassigned queue with waiting timers (called out after 2 minutes), `nearest_drivers`, `assign_booking` (assign and reassign), cancel with a reason.
 - [x] `/admin/bookings` list with filters, and detail with the `booking_events` timeline.
 - [x] Hospitals at `/admin/hospitals` on Supabase (add, edit, hide from patients); the old Firebase hospital manager is removed.
-- [ ] Owner: create the first admin account (see Phase 1), sign in at `/staff/login` and try each admin screen. They are covered by unit tests with a mocked server but **have not been opened against the live project**.
-- [ ] Port the reviews and patient records screens to Supabase behind the admin role. Still on Firebase at `/admin`.
-- [ ] `invite-staff` function and `/admin/staff`. Needs a server-side function holding the service role key.
+- [x] Every admin screen opened against the live project as an admin on 2026-11-10 (reading only). This found and fixed a request query the mocked tests could not catch.
+- [ ] Owner: try the actions that change data against the live project: approve and suspend a driver, assign and cancel a request, add and hide a hospital.
+- [x] `/admin/reviews` (publish, reject, take down) and `/admin/records` (crew trip records, archive and restore) on Supabase. The landing page reads published reviews from Supabase and sends new ones for moderation.
+- [x] Firebase removed from the app: the old admin area, its sign-in, the unused patient form and the `firebase` package are gone. `/admin-login` and old `/admin/...` addresses redirect.
+- [x] Crew trip record form: after a trip, the driver's home screen lists completed trips from the last 48 hours with no record and opens the form in place (so location sharing continues). Saving is safe to retry.
+- [x] `/admin/records` can download the listed records as a spreadsheet (CSV) file.
+- [x] Review moderation tried against the live project on 2026-11-10: a test review sent from the landing page appeared under Waiting and was rejected.
+- [ ] Owner: as a driver, complete a trip and write its record, then check it appears at `/admin/records`. Not yet tried against the live project.
+- [x] `/admin/staff` (list and invite form), `supabase/functions/invite-staff` and `/staff/welcome`, where an invited person chooses a password.
+- [x] `invite-staff` deployed to the live project on 2026-11-10. Checked that it recognises a signed-in dispatcher and refuses bad input; no real invitation has been sent yet.
+- [ ] Owner: add `<site address>/staff/welcome` (for now `http://localhost:5173/staff/welcome`) to the redirect addresses under Authentication > URL Configuration, then invite one real person and follow the email through to choosing a password.
 
 **Done when:** a new driver cannot see requests until approved; a dispatcher can assign and reassign a waiting request and sees every change in the timeline.
 
