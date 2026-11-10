@@ -49,6 +49,10 @@ export default [
     },
   },
   {
+    files: ['public/push-sw.js'],
+    languageOptions: { globals: globals.serviceworker },
+  },
+  {
     files: ['*.config.js', '*.cjs', 'supabase/tests/**'],
     languageOptions: { globals: globals.node },
   },

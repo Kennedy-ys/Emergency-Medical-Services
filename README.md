@@ -4,7 +4,7 @@ An installable web app (PWA) for requesting an ambulance in Calabar, Nigeria: pa
 
 ## Status
 
-The app is being rebuilt for a real pilot and now runs entirely on Supabase; Firebase has been removed. Work follows the implementation plan below. Phases 1 to 3 are in place: requesting and tracking, the driver screens and the dispatcher console. Patient accounts, push notifications and technician chat come next.
+The app is being rebuilt for a real pilot and now runs entirely on Supabase; Firebase has been removed. Work follows the implementation plan below. Phases 1 to 3 are in place: requesting and tracking, the driver screens and the dispatcher console. Push notifications (Phase 5) are built and need switching on per project: see `docs/07-PUSH-SETUP.md`. Patient accounts and technician chat come next.
 
 ## Documentation
 

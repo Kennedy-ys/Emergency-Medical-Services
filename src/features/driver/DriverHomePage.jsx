@@ -8,6 +8,8 @@ import { useOnline } from '../../hooks/useOnline';
 import { useSession } from '../../hooks/useSession';
 import { classifyError } from '../../lib/supabase';
 import { errorText } from '../../lib/status';
+import InstallCard from '../push/InstallCard';
+import PushOptIn from '../push/PushOptIn';
 import { useDriverHeartbeat, useMyDriver, useMyTrip, useSetAvailability } from './api';
 import OpenRequests from './OpenRequests';
 import RecordsDue from './RecordsDue';
@@ -108,6 +110,8 @@ export default function DriverHomePage() {
         {!online && (
           <p className="text-gray-600">You are offline. Reconnect to change your status.</p>
         )}
+        <PushOptIn audience="driver" />
+        <InstallCard />
         {onDuty && <OpenRequests position={position} />}
         <RecordsDue userId={user.id} onWrite={setRecordFor} />
       </div>

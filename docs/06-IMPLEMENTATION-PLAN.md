@@ -115,11 +115,14 @@ PRD: P-6, P-10.
 
 PRD: D-4, P-11.
 
-- [ ] Proof of concept: send one Web Push from an Edge Function. If the library does not work on Deno, fall back to a small Node service or Firebase Cloud Messaging for delivery only.
-- [ ] VAPID keys; service worker push and notification-click handlers; permission prompt at the right moment; `push_subscriptions` storage.
-- [ ] `notify-new-booking`, `notify-booking-change`; cleanup of dead subscriptions.
-- [ ] Install prompt for drivers; iPhone instructions (must add to Home Screen).
-- [ ] Bundle the notification sound correctly.
+- [x] Proof of concept: send one Web Push from an Edge Function. Verified on 2026-11-10: the `web-push` library runs on Supabase Edge Functions, signs and encrypts a message and reaches Google's push service. No fallback service is needed.
+- [x] VAPID keys (`scripts/setup-push-keys.mjs`); service worker push and notification-click handlers (`public/push-sw.js`); permission asked from a "Turn on alerts" card, never on page load; `push_subscriptions` storage through `save_push_subscription`.
+- [x] One function, `push-notify`, covers new requests and booking changes; it is called by a trigger on `booking_events` and deletes dead subscriptions. Patients can turn on alerts from the tracking page.
+- [x] Install prompt for drivers; iPhone instructions (must add to Home Screen).
+- [x] Notification sound: a web app cannot set one, so the old sound file is not carried over. The phone's own notification sound and a vibration pattern are used.
+- [x] Switched on for the live project on 2026-11-10 by following `docs/07-PUSH-SETUP.md` (keys, database change, function, function address). The function answers and ignores made-up events.
+- [x] A real notification arrived in desktop Chrome from a preview build (owner, 2026-11-10).
+- [x] Android test passed on a real phone (owner, 2026-11-10): app closed, notification arrived and tapping it opened the request. Run against a preview build over USB port forwarding; repeat once on the hosted app before the pilot.
 
 **Done when:** a driver with the app closed on Android receives a new-request notification within about 10 seconds and tapping it opens the request.
 

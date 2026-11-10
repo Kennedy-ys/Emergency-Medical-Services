@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: 'EMS PWA',
-        short_name: 'EMS',
-        description: 'Emergency Medical Services PWA',
+        name: 'EMS Connect',
+        short_name: 'EMS Connect',
+        description: 'Request an ambulance and follow it to you.',
         theme_color: '#0f172a',
         background_color: '#ffffff',
         display: 'standalone',
@@ -82,6 +82,7 @@ export default defineConfig({
         ],
         importScripts: [
           'precache-map-tiles.js', // Custom script to precache specific map tiles
+          'push-sw.js', // Shows push notifications and opens the app when one is tapped
         ],
       },
     }),
